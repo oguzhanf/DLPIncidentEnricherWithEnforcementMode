@@ -8,18 +8,6 @@
       "metadata": {
         "description": "Name of the Logic App/Playbook"
       }
-    },
-    "PurviewAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of your Microsoft Purview account"
-      }
-    },
-    "PurviewTenantId": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure AD Tenant ID"
-      }
     }
   },
   "variables": {
@@ -62,14 +50,6 @@
             "$connections": {
               "defaultValue": {},
               "type": "Object"
-            },
-            "PurviewAccountName": {
-              "defaultValue": "[parameters('PurviewAccountName')]",
-              "type": "String"
-            },
-            "PurviewTenantId": {
-              "defaultValue": "[parameters('PurviewTenantId')]",
-              "type": "String"
             }
           },
           "triggers": {

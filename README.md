@@ -56,16 +56,7 @@ Click the button below to deploy directly to Azure:
 
 1. **Clone or download this repository**
 
-2. **Edit parameters.json** with your values:
-   ```json
-   {
-     "PlaybookName": "DLPPolicyEnrichment-Playbook",
-     "PurviewAccountName": "your-purview-account",
-     "PurviewTenantId": "your-tenant-id"
-   }
-   ```
-
-3. **Run the deployment script**:
+2. **Run the deployment script**:
    ```powershell
    .\deploy.ps1 -ResourceGroupName "your-rg-name" -WorkspaceName "your-sentinel-workspace"
    ```
@@ -76,9 +67,7 @@ Click the button below to deploy directly to Azure:
 az deployment group create \
   --resource-group <your-rg-name> \
   --template-file DLPPolicyEnrichment-Playbook.json \
-  --parameters PlaybookName="DLPPolicyEnrichment-Playbook" \
-               PurviewAccountName="your-purview-account" \
-               PurviewTenantId="your-tenant-id"
+  --parameters PlaybookName="DLPPolicyEnrichment-Playbook"
 ```
 
 ## Post-Deployment Configuration

@@ -5,19 +5,16 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$ResourceGroupName,
-    
+
     [Parameter(Mandatory=$true)]
     [string]$WorkspaceName,
-    
+
     [Parameter(Mandatory=$false)]
     [string]$PlaybookName = "DLPPolicyEnrichment-Playbook",
-    
+
     [Parameter(Mandatory=$false)]
     [string]$Location,
-    
-    [Parameter(Mandatory=$false)]
-    [string]$PurviewAccountName,
-    
+
     [Parameter(Mandatory=$false)]
     [string]$ParametersFile = "parameters.json"
 )
@@ -77,21 +74,6 @@ Write-Host "Found workspace: $WorkspaceName" -ForegroundColor Green
 Write-Host "`nPreparing deployment parameters..." -ForegroundColor Cyan
 $deploymentParams = @{
     PlaybookName = $PlaybookName
-    PurviewTenantId = $tenantId
-}
-
-if ($PurviewAccountName) {
-    $deploymentParams.PurviewAccountName = $PurviewAccountName
-} elseif (Test-Path $ParametersFile) {
-    Write-Host "Loading parameters from $ParametersFile" -ForegroundColor Yellow
-    $paramsContent = Get-Content $ParametersFile | ConvertFrom-Json
-    if ($paramsContent.PurviewAccountName) {
-        $deploymentParams.PurviewAccountName = $paramsContent.PurviewAccountName
-    }
-}
-
-if (-not $deploymentParams.PurviewAccountName) {
-    $deploymentParams.PurviewAccountName = Read-Host "Enter your Purview Account Name"
 }
 
 # Deploy the Logic App
@@ -162,10 +144,7 @@ try {
     
     # Get Microsoft Graph Service Principal
     $graphApp = Get-AzureADServicePrincipal -Filter "AppId eq '00000003-0000-0000-c000-000000000000'"
-    
-    # Get the managed identity service principal
-    $msi = Get-AzureADServicePrincipal -ObjectId $principalId
-    
+
     # Required permissions
     $requiredPermissions = @(
         "SecurityAlert.Read.All",

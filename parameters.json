@@ -4,12 +4,6 @@
   "parameters": {
     "PlaybookName": {
       "value": "DLPPolicyEnrichment-Playbook"
-    },
-    "PurviewAccountName": {
-      "value": "YOUR_PURVIEW_ACCOUNT_NAME"
-    },
-    "PurviewTenantId": {
-      "value": "YOUR_TENANT_ID"
     }
   }
 }

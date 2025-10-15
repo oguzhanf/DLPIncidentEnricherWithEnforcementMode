@@ -12,39 +12,26 @@ This guide will get you up and running in **15 minutes**.
 
 ## Step-by-Step Deployment
 
-### Step 1: Prepare Configuration (2 minutes)
+### Step 1: Connect to Azure (1 minute)
 
-1. **Edit `parameters.json`** with your values:
-   ```json
-   {
-     "PlaybookName": "DLPPolicyEnrichment-Playbook",
-     "PurviewAccountName": "contoso-purview",
-     "PurviewTenantId": "12345678-1234-1234-1234-123456789abc"
-   }
-   ```
+```powershell
+Connect-AzAccount
+```
 
-2. **Get your Tenant ID**:
-   ```powershell
-   Connect-AzAccount
-   (Get-AzContext).Tenant.Id
-   ```
-
-### Step 2: Deploy the Playbook (5 minutes)
+### Step 2: Deploy the Playbook (3 minutes)
 
 Run the deployment script:
 
 ```powershell
 .\deploy.ps1 `
     -ResourceGroupName "your-sentinel-rg" `
-    -WorkspaceName "your-sentinel-workspace" `
-    -PlaybookName "DLPPolicyEnrichment-Playbook"
+    -WorkspaceName "your-sentinel-workspace"
 ```
 
 The script will:
-- ✅ Deploy the Logic App
-- ✅ Create Managed Identity
+- ✅ Deploy the Logic App with Managed Identity
 - ✅ Assign Sentinel Responder role
-- ✅ Grant Graph API permissions
+- ✅ Grant Graph API permissions (SecurityAlert.Read.All, InformationProtectionPolicy.Read.All)
 
 ### Step 3: Authorize API Connection (3 minutes)
 
