@@ -80,25 +80,8 @@
             },
             "Condition_Is_DLP_Incident": {
               "actions": {
-                "Initialize_AlertIds": {
-                  "runAfter": {},
-                  "type": "InitializeVariable",
-                  "inputs": {
-                    "variables": [
-                      {
-                        "name": "AlertIds",
-                        "type": "array",
-                        "value": "@triggerBody()?['object']?['properties']?['additionalData']?['alertsCount']"
-                      }
-                    ]
-                  }
-                },
                 "Parse_Incident_Details": {
-                  "runAfter": {
-                    "Initialize_AlertIds": [
-                      "Succeeded"
-                    ]
-                  },
+                  "runAfter": {},
                   "type": "ParseJson",
                   "inputs": {
                     "content": "@triggerBody()?['object']",
