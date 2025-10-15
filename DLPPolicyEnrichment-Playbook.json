@@ -47,10 +47,6 @@
         "parameterValueType": "Alternative",
         "api": {
           "id": "[variables('MicrosoftSentinelConnectionApiId')]"
-        },
-        "parameterValues": {
-          "token:TenantId": "[subscription().tenantId]",
-          "token:grantType": "code"
         }
       }
     },
