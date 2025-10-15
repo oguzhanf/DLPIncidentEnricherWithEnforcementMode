@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "PlaybookName": {
+      "value": "DLPPolicyEnrichment-Playbook"
+    },
+    "PurviewAccountName": {
+      "value": "YOUR_PURVIEW_ACCOUNT_NAME"
+    },
+    "PurviewTenantId": {
+      "value": "YOUR_TENANT_ID"
+    }
+  }
+}
+

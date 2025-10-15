@@ -1,0 +1,257 @@
+// ============================================================================
+// KQL Queries for DLP Policy Enriched Incidents
+// ============================================================================
+// Use these queries in Microsoft Sentinel to analyze enriched DLP incidents
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 1. Find all DLP incidents with Enforcement Mode tags
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode"
+| extend EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags))
+| extend DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    EnforcementMode,
+    DLPPolicy,
+    Owner = OwnerAssignedTo,
+    Tags
+| sort by TimeGenerated desc
+
+// ----------------------------------------------------------------------------
+// 2. Get enrichment details from incident comments
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "AutoEnriched"
+| join kind=inner (
+    SecurityIncidentComment
+    | where Comment contains "DLP Policy Enrichment"
+) on $left.IncidentNumber == $right.IncidentNumber
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    EnrichmentComment = Comment,
+    CommentCreatedTime = CreatedTimeUTC
+| sort by TimeGenerated desc
+
+// ----------------------------------------------------------------------------
+// 3. Statistics by Enforcement Mode
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode"
+| extend EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags))
+| summarize 
+    IncidentCount = count(),
+    HighSeverity = countif(Severity == "High"),
+    MediumSeverity = countif(Severity == "Medium"),
+    LowSeverity = countif(Severity == "Low")
+    by EnforcementMode
+| render columnchart
+
+// ----------------------------------------------------------------------------
+// 4. DLP incidents by policy and enforcement mode over time
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "DLPPolicy"
+| extend 
+    EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags)),
+    DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| summarize Count = count() by bin(TimeGenerated, 1d), DLPPolicy, EnforcementMode
+| render timechart
+
+// ----------------------------------------------------------------------------
+// 5. Find incidents with specific enforcement mode (e.g., "Enforce")
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode:Enforce"
+| extend DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    DLPPolicy,
+    Owner = OwnerAssignedTo
+| sort by TimeGenerated desc
+
+// ----------------------------------------------------------------------------
+// 6. Compare incidents by enforcement mode (Enforce vs Test vs Audit)
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode"
+| extend EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags))
+| summarize 
+    TotalIncidents = count(),
+    AvgTimeToClose = avg(datetime_diff('hour', ClosedTime, CreatedTime)),
+    OpenIncidents = countif(Status == "New" or Status == "Active")
+    by EnforcementMode
+| extend AvgTimeToCloseHours = round(AvgTimeToClose, 2)
+| project EnforcementMode, TotalIncidents, OpenIncidents, AvgTimeToCloseHours
+
+// ----------------------------------------------------------------------------
+// 7. Top DLP policies triggering incidents
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "DLPPolicy"
+| extend DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| summarize 
+    IncidentCount = count(),
+    HighSeverityCount = countif(Severity == "High"),
+    LastIncident = max(TimeGenerated)
+    by DLPPolicy
+| sort by IncidentCount desc
+| take 10
+
+// ----------------------------------------------------------------------------
+// 8. Incidents missing enrichment (not auto-enriched)
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Title contains "DLP" or Title contains "Purview"
+| where Tags !has "AutoEnriched"
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    Tags
+| sort by TimeGenerated desc
+
+// ----------------------------------------------------------------------------
+// 9. Enrichment success rate
+// ----------------------------------------------------------------------------
+let DLPIncidents = SecurityIncident
+    | where Title contains "DLP" or Title contains "Purview" or ProviderName == "Microsoft Purview";
+let EnrichedIncidents = DLPIncidents | where Tags has "AutoEnriched";
+DLPIncidents
+| summarize 
+    TotalDLPIncidents = count()
+| extend EnrichedCount = toscalar(EnrichedIncidents | count)
+| extend EnrichmentRate = round((EnrichedCount * 100.0) / TotalDLPIncidents, 2)
+| project TotalDLPIncidents, EnrichedCount, EnrichmentRate
+
+// ----------------------------------------------------------------------------
+// 10. Detailed view with all enrichment data
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "AutoEnriched"
+| extend 
+    EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags)),
+    DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| join kind=leftouter (
+    SecurityIncidentComment
+    | where Comment contains "DLP Policy Enrichment"
+    | extend PolicyDetails = extract("Policy Name: ([^\\n]+)", 1, Comment)
+    | extend PolicyId = extract("Policy ID: ([^\\n]+)", 1, Comment)
+    | extend EnrichedTime = extract("Enriched by automated playbook at ([^<]+)", 1, Comment)
+) on $left.IncidentNumber == $right.IncidentNumber
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    EnforcementMode,
+    DLPPolicy,
+    PolicyId,
+    EnrichedTime,
+    Owner = OwnerAssignedTo,
+    AlertsCount,
+    BookmarksCount
+| sort by TimeGenerated desc
+
+// ----------------------------------------------------------------------------
+// 11. Alert for high-severity incidents with "Enforce" mode
+// ----------------------------------------------------------------------------
+// Use this as a Sentinel Analytics Rule
+SecurityIncident
+| where Severity == "High"
+| where Tags has "EnforcementMode:Enforce"
+| extend DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| where Status in ("New", "Active")
+| project 
+    TimeGenerated,
+    IncidentNumber,
+    Title,
+    DLPPolicy,
+    Owner = OwnerAssignedTo
+
+// ----------------------------------------------------------------------------
+// 12. Workbook query - Incidents by severity and enforcement mode
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode"
+| extend EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags))
+| summarize Count = count() by Severity, EnforcementMode
+| render columnchart 
+    with (
+        title="DLP Incidents by Severity and Enforcement Mode",
+        xtitle="Severity",
+        ytitle="Count"
+    )
+
+// ----------------------------------------------------------------------------
+// 13. Time to enrichment (how long after incident creation)
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "AutoEnriched"
+| join kind=inner (
+    SecurityIncidentComment
+    | where Comment contains "DLP Policy Enrichment"
+    | project IncidentNumber, EnrichmentTime = CreatedTimeUTC
+) on $left.IncidentNumber == $right.IncidentNumber
+| extend TimeToEnrichment = datetime_diff('second', EnrichmentTime, CreatedTime)
+| summarize 
+    AvgEnrichmentTime = avg(TimeToEnrichment),
+    MinEnrichmentTime = min(TimeToEnrichment),
+    MaxEnrichmentTime = max(TimeToEnrichment)
+| extend 
+    AvgSeconds = round(AvgEnrichmentTime, 2),
+    MinSeconds = round(MinEnrichmentTime, 2),
+    MaxSeconds = round(MaxEnrichmentTime, 2)
+
+// ----------------------------------------------------------------------------
+// 14. Export enriched incidents for reporting
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "AutoEnriched"
+| extend 
+    EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags)),
+    DLPPolicy = extract("DLPPolicy:([^,\\]]+)", 1, tostring(Tags))
+| project 
+    IncidentDate = format_datetime(TimeGenerated, 'yyyy-MM-dd'),
+    IncidentTime = format_datetime(TimeGenerated, 'HH:mm:ss'),
+    IncidentNumber,
+    Title,
+    Severity,
+    Status,
+    EnforcementMode,
+    DLPPolicy,
+    Owner = OwnerAssignedTo,
+    AlertCount = AlertsCount,
+    CreatedTime = format_datetime(CreatedTime, 'yyyy-MM-dd HH:mm:ss'),
+    ClosedTime = format_datetime(ClosedTime, 'yyyy-MM-dd HH:mm:ss')
+| sort by IncidentDate desc, IncidentTime desc
+
+// ----------------------------------------------------------------------------
+// 15. Trend analysis - Are enforcement mode policies effective?
+// ----------------------------------------------------------------------------
+SecurityIncident
+| where Tags has "EnforcementMode"
+| extend EnforcementMode = extract("EnforcementMode:([^,\\]]+)", 1, tostring(Tags))
+| summarize 
+    IncidentCount = count(),
+    UniqueUsers = dcount(OwnerAssignedTo),
+    AvgSeverity = avg(case(Severity == "High", 3, Severity == "Medium", 2, Severity == "Low", 1, 0))
+    by bin(TimeGenerated, 7d), EnforcementMode
+| render timechart
+

@@ -1,0 +1,26 @@
+# Azure deployment artifacts
+*.zip
+*.log
+
+# PowerShell
+*.ps1xml
+
+# Sensitive configuration
+parameters.local.json
+secrets.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+
