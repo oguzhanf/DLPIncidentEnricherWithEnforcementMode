@@ -50,7 +50,7 @@ DLP Alert → Defender XDR → Sentinel Incident
 
 Click the button below to deploy directly to Azure:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fyour-repo%2Fmain%2FDLPPolicyEnrichment-Playbook.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Foguzhanf%2FDLPIncidentEnricherWithEnforcementMode%2Fmain%2FDLPPolicyEnrichment-Playbook.json)
 
 ### Option 2: PowerShell Deployment
 
