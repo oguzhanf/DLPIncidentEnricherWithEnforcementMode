@@ -4,6 +4,9 @@
   "parameters": {
     "PlaybookName": {
       "value": "DLPPolicyEnrichment-Playbook"
+    },
+    "WorkspaceName": {
+      "value": "YOUR_SENTINEL_WORKSPACE_NAME"
     }
   }
 }

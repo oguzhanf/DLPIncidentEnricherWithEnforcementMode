@@ -67,7 +67,8 @@ Click the button below to deploy directly to Azure:
 az deployment group create \
   --resource-group <your-rg-name> \
   --template-file DLPPolicyEnrichment-Playbook.json \
-  --parameters PlaybookName="DLPPolicyEnrichment-Playbook"
+  --parameters PlaybookName="DLPPolicyEnrichment-Playbook" \
+               WorkspaceName="<your-sentinel-workspace-name>"
 ```
 
 ## Post-Deployment Configuration

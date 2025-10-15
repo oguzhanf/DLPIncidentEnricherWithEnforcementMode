@@ -74,6 +74,9 @@ Write-Host "Found workspace: $WorkspaceName" -ForegroundColor Green
 Write-Host "`nPreparing deployment parameters..." -ForegroundColor Cyan
 $deploymentParams = @{
     PlaybookName = $PlaybookName
+    WorkspaceName = $WorkspaceName
+    WorkspaceResourceGroup = $ResourceGroupName
+    SubscriptionId = (Get-AzContext).Subscription.Id
 }
 
 # Deploy the Logic App

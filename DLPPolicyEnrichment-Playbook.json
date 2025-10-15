@@ -8,6 +8,26 @@
       "metadata": {
         "description": "Name of the Logic App/Playbook"
       }
+    },
+    "WorkspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Sentinel workspace"
+      }
+    },
+    "WorkspaceResourceGroup": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().name]",
+      "metadata": {
+        "description": "Resource group of the Sentinel workspace"
+      }
+    },
+    "SubscriptionId": {
+      "type": "string",
+      "defaultValue": "[subscription().subscriptionId]",
+      "metadata": {
+        "description": "Subscription ID of the Sentinel workspace"
+      }
     }
   },
   "variables": {
@@ -27,6 +47,10 @@
         "parameterValueType": "Alternative",
         "api": {
           "id": "[variables('MicrosoftSentinelConnectionApiId')]"
+        },
+        "parameterValues": {
+          "token:TenantId": "[subscription().tenantId]",
+          "token:grantType": "code"
         }
       }
     },
@@ -313,7 +337,8 @@
                   "authentication": {
                     "type": "ManagedServiceIdentity"
                   }
-                }
+                },
+                "connectionResourceId": "[resourceId(parameters('WorkspaceResourceGroup'), 'Microsoft.OperationalInsights/workspaces', parameters('WorkspaceName'))]"
               }
             }
           }
