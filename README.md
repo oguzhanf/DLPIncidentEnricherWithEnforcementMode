@@ -120,16 +120,29 @@ New-AzRoleAssignment -ObjectId $principalId `
 
 ### 4. Configure Automation Rule in Sentinel
 
+**⚠️ CRITICAL: Without this step, the playbook will NOT trigger automatically!**
+
 1. Go to **Microsoft Sentinel** → **Automation**
 2. Click **+ Create** → **Automation rule**
 3. Configure:
-   - **Name**: "Enrich DLP Incidents"
+   - **Name**: "Enrich DLP Incidents from Defender XDR"
    - **Trigger**: When incident is created
-   - **Conditions**: 
-     - Alert product name contains "Microsoft Purview" OR
-     - Incident title contains "DLP"
-   - **Actions**: Run playbook → Select "DLPPolicyEnrichment-Playbook"
+   - **Conditions**:
+     - **Incident provider** → **Equals** → **Microsoft 365 Defender** (ensures it only runs for Defender XDR incidents)
+     - **AND** (optional): **Title** → **Contains** → **DLP** (further filters for DLP-specific incidents)
+   - **Actions**:
+     - **Run playbook** → Select **DLPPolicyEnrichment-Playbook**
+   - **Order**: 1
+   - **Expiration**: Leave blank
 4. Click **Apply**
+
+### 5. Verify Defender XDR Integration
+
+Ensure Defender XDR incidents are syncing to Sentinel:
+
+1. Go to **Microsoft Sentinel** → **Settings** → **Microsoft Defender XDR**
+2. Verify **Connect incidents & alerts** is **enabled**
+3. Ensure incident sync includes Microsoft Purview DLP alerts
 
 ## How It Works
 
