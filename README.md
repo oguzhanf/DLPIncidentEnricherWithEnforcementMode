@@ -93,6 +93,11 @@ $alertPermission = $graphApp.AppRoles | Where-Object {$_.Value -eq "SecurityAler
 New-AzureADServiceAppRoleAssignment -ObjectId $principalId -PrincipalId $principalId `
   -ResourceId $graphApp.ObjectId -Id $alertPermission.Id
 
+# SecurityIncident.Read.All (REQUIRED!)
+$incidentPermission = $graphApp.AppRoles | Where-Object {$_.Value -eq "SecurityIncident.Read.All"}
+New-AzureADServiceAppRoleAssignment -ObjectId $principalId -PrincipalId $principalId `
+  -ResourceId $graphApp.ObjectId -Id $incidentPermission.Id
+
 # InformationProtectionPolicy.Read.All
 $policyPermission = $graphApp.AppRoles | Where-Object {$_.Value -eq "InformationProtectionPolicy.Read.All"}
 New-AzureADServiceAppRoleAssignment -ObjectId $principalId -PrincipalId $principalId `

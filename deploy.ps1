@@ -151,6 +151,7 @@ try {
     # Required permissions
     $requiredPermissions = @(
         "SecurityAlert.Read.All",
+        "SecurityIncident.Read.All",
         "InformationProtectionPolicy.Read.All"
     )
     
@@ -189,7 +190,7 @@ try {
     Write-Host "  1. Go to Azure AD > Enterprise Applications" -ForegroundColor White
     Write-Host "  2. Search for: $PlaybookName" -ForegroundColor White
     Write-Host "  3. Go to Permissions > Add permission > Microsoft Graph > Application permissions" -ForegroundColor White
-    Write-Host "  4. Add: SecurityAlert.Read.All, InformationProtectionPolicy.Read.All" -ForegroundColor White
+    Write-Host "  4. Add: SecurityAlert.Read.All, SecurityIncident.Read.All, InformationProtectionPolicy.Read.All" -ForegroundColor White
     Write-Host "  5. Grant admin consent" -ForegroundColor White
 }
 
