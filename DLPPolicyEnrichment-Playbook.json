@@ -89,15 +89,6 @@
             }
           },
           "actions": {
-            "Filter_DLP_Incidents": {
-              "runAfter": {},
-              "type": "Query",
-              "inputs": {
-                "from": "@triggerBody()?['object']?['properties']?['relatedAnalyticRuleIds']",
-                "where": "@contains(item(), 'DLP')"
-              },
-              "description": "Check if this is a DLP-related incident"
-            },
             "Condition_Is_DLP_Incident": {
               "actions": {
                 "Parse_Incident_Details": {
@@ -301,23 +292,31 @@
                   "type": "Foreach"
                 }
               },
-              "runAfter": {
-                "Filter_DLP_Incidents": [
-                  "Succeeded"
-                ]
-              },
+              "runAfter": {},
               "expression": {
-                "and": [
+                "or": [
                   {
-                    "greater": [
-                      "@length(body('Filter_DLP_Incidents'))",
-                      0
+                    "contains": [
+                      "@triggerBody()?['object']?['properties']?['title']",
+                      "DLP"
+                    ]
+                  },
+                  {
+                    "contains": [
+                      "@triggerBody()?['object']?['properties']?['incidentUrl']",
+                      "microsoft.com"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@triggerBody()?['object']?['properties']?['additionalData']?['alertProductNames']?[0]",
+                      "Microsoft Purview"
                     ]
                   }
                 ]
               },
               "type": "If",
-              "description": "Only process if this is a DLP incident"
+              "description": "Only process if this is a DLP incident from Defender XDR/Purview"
             }
           },
           "outputs": {}
